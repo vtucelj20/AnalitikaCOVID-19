@@ -1,5 +1,5 @@
 # AnalitikaCOVID-19
-Sustav za analitiku COVID-19 u Hrvatskoj
+## Sustav za analitiku COVID-19 u Hrvatskoj ##
 
 * Web stranica kreirana je lokalno te je potrebno proučiti **Upute za kreiranje baze i pokretanje aplikacije**.
 
