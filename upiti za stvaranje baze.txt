@@ -1,0 +1,77 @@
+createdb projektcovid
+psql projektcovid
+
+CREATE SCHEMA postgis;
+
+ALTER DATABASE projektcovid SET search_path=public, postgis, contrib;
+
+\c projektcovid
+
+CREATE EXTENSION postgis SCHEMA postgis;
+
+CREATE USER valentina WITH SUPERUSER PASSWORD 'lozinka';
+
+ALTER DATABASE projektcovid OWNER TO valentina;
+
+\q
+
+cd croatia-latest-free
+shp2pgsql -s 4326 -c -D -I gis_osm_places_free_1.shp postgis.mjesta | psql projektcovid
+
+cd -
+
+cd HRV_adm
+shp2pgsql -s 4326 -c -D -I HRV_adm1.shp postgis.podrucja | psql projektcovid
+
+cd -
+
+psql projektcovid
+
+update podrucja set name_1='Međimurska' where gid=11;
+update podrucja set name_1='Krapinsko-zagorska' where gid=9;
+update podrucja set name_1='Dubrovačko-neretvanska' where gid=4;
+update podrucja set name_1='Splitsko-dalmatinska' where gid=16;
+update podrucja set name_1='Šibensko-kninska' where gid=1;
+update podrucja set name_1='Ličko-senjska' where gid=10;
+update podrucja set name_1='Primorsko-goranska' where gid=14;
+update podrucja set name_1='Karlovačka' where gid=7;
+update podrucja set name_1='Sisačko-moslavačka' where gid=15;
+update podrucja set name_1='Požeško-slavonska' where gid=13;
+update podrucja set name_1='Brodsko-posavska' where gid=3;
+update podrucja set name_1='Vukovarsko-srijemska' where gid=19;
+update podrucja set name_1='Osječko-baranjska' where gid=12;
+update podrucja set name_1='Bjelovarsko-bilogorska' where gid=2;
+update podrucja set name_1='Virovitičko-podravska' where gid=18;
+update podrucja set name_1='Koprivničko-križevačka' where gid=8;
+
+CREATE TABLE IF NOT EXISTS postgis.zupanije (
+	zupanija_id INT PRIMARY KEY,
+	naziv_zupanije VARCHAR(70),
+	broj_stanovnika INT,
+	mjesto_gid INT REFERENCES mjesta(gid) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS postgis.dnevni_izvjestaji (
+	izvjestaj_id INT PRIMARY KEY,
+	datum_i_vrijeme_unosa TIMESTAMP,
+	za_datum DATE
+);
+
+CREATE TABLE IF NOT EXISTS postgis.podaci_detaljno (
+	izvjestaj_id INT REFERENCES dnevni_izvjestaji(izvjestaj_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+	zupanija_id INT REFERENCES zupanije(zupanija_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+	broj_ukupno_zarazenih INT,
+	broj_ukupno_umrlih INT,
+	broj_novozarazenih INT,
+	broj_trenutno_aktivnih INT,
+	PRIMARY KEY (izvjestaj_id, zupanija_id)
+);
+
+COPY zupanije(zupanija_id, naziv_zupanije, broj_stanovnika, mjesto_gid) FROM '/home/vtucelj20/Downloads/zupanije.csv' DELIMITER ',' CSV HEADER;
+
+SET DateStyle TO MDY;
+
+COPY dnevni_izvjestaji(izvjestaj_id, datum_i_vrijeme_unosa, za_datum) FROM '/home/vtucelj20/Downloads/izvjestaji.csv' DELIMITER ',' CSV HEADER;
+
+COPY podaci_detaljno(izvjestaj_id, zupanija_id, broj_ukupno_zarazenih, broj_ukupno_umrlih, broj_novozarazenih, broj_trenutno_aktivnih) FROM '/home/vtucelj20/Downloads/detaljno.csv' DELIMITER ',' CSV HEADER;
+

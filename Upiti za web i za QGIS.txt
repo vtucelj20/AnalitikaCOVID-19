@@ -1,0 +1,89 @@
+Upiti za web:
+
+select zupanija_id, naziv_zupanije from zupanije;
+
+
+select z.naziv_zupanije, di.za_datum, pd.broj_ukupno_zarazenih, pd.broj_ukupno_umrlih, pd.broj_novozarazenih, 
+pd.broj_trenutno_aktivnih from zupanije z, podaci_detaljno pd, dnevni_izvjestaji di where 
+z.zupanija_id = pd.zupanija_id and pd.izvjestaj_id = di.izvjestaj_id and 
+z.zupanija_id = '$zupanija' and di.za_datum between '$datumOd' and '$datumDo';
+
+
+select z.naziv_zupanije, di.za_datum, pd.broj_ukupno_zarazenih, pd.broj_ukupno_umrlih, pd.broj_novozarazenih, 
+pd.broj_trenutno_aktivnih from zupanije z, podaci_detaljno pd, dnevni_izvjestaji di where 
+z.zupanija_id = pd.zupanija_id and pd.izvjestaj_id = di.izvjestaj_id and di.za_datum = '$datum';
+
+
+
+Upiti za QGIS:
+
+select * from zupanije z, mjesta m where z.mjesto_gid = m.gid;
+
+
+select m.geom, pd.broj_ukupno_zarazenih from zupanije z, mjesta m, podaci_detaljno pd, dnevni_izvjestaji di 
+where z.mjesto_gid = m.gid and pd.zupanija_id = z.zupanija_id and pd.izvjestaj_id = di.izvjestaj_id and di.za_datum = '2022-01-27';
+
+
+select m.geom, pd.broj_ukupno_zarazenih, z.broj_stanovnika, round(((pd.broj_ukupno_zarazenih::decimal / z.broj_stanovnika::decimal) * 100), 2) as postotak,  
+z.naziv_zupanije from mjesta m, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di where z.mjesto_gid = m.gid 
+and pd.zupanija_id = z.zupanija_id and pd.izvjestaj_id = di.izvjestaj_id and di.za_datum = '2022-01-27';
+
+
+select pd.broj_ukupno_zarazenih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, 
+dnevni_izvjestaji di where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  
+and p.name_1 = z.naziv_zupanije  and di.za_datum = '2022-01-27' order by pd.broj_ukupno_zarazenih desc limit 5;
+
+
+select pd.broj_ukupno_zarazenih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, 
+dnevni_izvjestaji di where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  
+and p.name_1 = z.naziv_zupanije  and di.za_datum = '2022-01-27' order by pd.broj_ukupno_zarazenih asc limit 5;
+
+
+select m.geom, pd.broj_novozarazenih from zupanije z, mjesta m, podaci_detaljno pd, dnevni_izvjestaji di 
+where z.mjesto_gid = m.gid and pd.zupanija_id = z.zupanija_id and pd.izvjestaj_id = di.izvjestaj_id and di.za_datum = '2022-01-27';
+
+
+select pd.broj_novozarazenih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_novozarazenih desc limit 5;
+
+
+select pd.broj_novozarazenih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_novozarazenih asc limit 5;
+
+
+select m.geom, pd.broj_trenutno_aktivnih, z.naziv_zupanije from zupanije z, mjesta m, podaci_detaljno pd, dnevni_izvjestaji di  
+where z.mjesto_gid = m.gid and pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and di.za_datum = '2022-01-27';
+
+
+select pd.broj_trenutno_aktivnih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_trenutno_aktivnih desc limit 5;
+
+
+select pd.broj_trenutno_aktivnih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_trenutno_aktivnih asc limit 5;
+
+
+select m.geom, pd.broj_ukupno_umrlih, z.naziv_zupanije from zupanije z, mjesta m, podaci_detaljno pd, dnevni_izvjestaji di  
+where z.mjesto_gid = m.gid and pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and di.za_datum = '2022-01-27';
+
+select pd.broj_ukupno_umrlih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_ukupno_umrlih asc limit 5;
+
+
+select pd.broj_ukupno_umrlih, z.naziv_zupanije, p.geom from podrucja p, zupanije z, podaci_detaljno pd, dnevni_izvjestaji di 
+where pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  and p.name_1 = z.naziv_zupanije  
+and di.za_datum = '2022-01-27' order by pd.broj_ukupno_umrlih desc limit 5;
+
+
+select m.geom, sum(pd.broj_novozarazenih) as zbroj  from podaci_detaljno pd, dnevni_izvjestaji di, mjesta m, zupanije z 
+where z.mjesto_gid = m.gid and pd.zupanija_id = z.zupanija_id  and pd.izvjestaj_id = di.izvjestaj_id  
+and di.za_datum between '2022-01-01' and '2022-01-27' group by m.geom;
+
+
+select b.geom, z.naziv_zupanije  from podrucja a, podrucja b, zupanije z where z.naziv_zupanije = b.name_1 
+and a.name_1 = 'Grad Zagreb' order by st_distance(a.geom, b.geom) desc limit 5;
