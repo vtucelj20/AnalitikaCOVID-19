@@ -1,0 +1,101 @@
+Upute za pokretanje aplikacije --> potrebno kreirati bazu lokalno sa svojim korisničkim imenom i lozinkom te promijeniti podatke 
+u pocetna.php i drugipregled.php datotekama kod konekcije na bazu podataka.
+
+Otvoriti PostgreSQL konzolu u terminalu na Linuxu.
+
+1.korak -->
+createdb projektcovid
+psql projektcovid
+
+CREATE SCHEMA postgis;
+
+ALTER DATABASE projektcovid SET search_path=public, postgis, contrib;
+
+\c projektcovid
+
+CREATE EXTENSION postgis SCHEMA postgis;
+
+CREATE USER vašekorisničkoime WITH SUPERUSER PASSWORD 'vašalozinka';
+
+ALTER DATABASE projektcovid OWNER TO vašekorisničkoime;
+
+\q
+
+
+2.korak --> kreiranje i unos prostornih tablica i podataka (mjesta i podrucja tablice), podatke preuzeti s githuba (direktorij podaci_prostorni)
+cd croatia-latest-free
+shp2pgsql -s 4326 -c -D -I gis_osm_places_free_1.shp postgis.mjesta | psql projektcovid
+
+cd -
+
+cd HRV_adm
+shp2pgsql -s 4326 -c -D -I HRV_adm1.shp postgis.podrucja | psql projektcovid
+
+cd -
+
+
+3.korak --> spojiti se na kreirani projekt i updatati potrebne redove tablice podrucja
+psql projektcovid
+
+update podrucja set name_1='Međimurska' where gid=11;
+update podrucja set name_1='Krapinsko-zagorska' where gid=9;
+update podrucja set name_1='Dubrovačko-neretvanska' where gid=4;
+update podrucja set name_1='Splitsko-dalmatinska' where gid=16;
+update podrucja set name_1='Šibensko-kninska' where gid=1;
+update podrucja set name_1='Ličko-senjska' where gid=10;
+update podrucja set name_1='Primorsko-goranska' where gid=14;
+update podrucja set name_1='Karlovačka' where gid=7;
+update podrucja set name_1='Sisačko-moslavačka' where gid=15;
+update podrucja set name_1='Požeško-slavonska' where gid=13;
+update podrucja set name_1='Brodsko-posavska' where gid=3;
+update podrucja set name_1='Vukovarsko-srijemska' where gid=19;
+update podrucja set name_1='Osječko-baranjska' where gid=12;
+update podrucja set name_1='Bjelovarsko-bilogorska' where gid=2;
+update podrucja set name_1='Virovitičko-podravska' where gid=18;
+update podrucja set name_1='Koprivničko-križevačka' where gid=8;
+
+
+4.korak -->  kreiranje preostalih tablica
+CREATE TABLE IF NOT EXISTS postgis.zupanije (
+	zupanija_id INT PRIMARY KEY,
+	naziv_zupanije VARCHAR(70),
+	broj_stanovnika INT,
+	mjesto_gid INT REFERENCES mjesta(gid) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS postgis.dnevni_izvjestaji (
+	izvjestaj_id INT PRIMARY KEY,
+	datum_i_vrijeme_unosa TIMESTAMP,
+	za_datum DATE
+);
+
+CREATE TABLE IF NOT EXISTS postgis.podaci_detaljno (
+	izvjestaj_id INT REFERENCES dnevni_izvjestaji(izvjestaj_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+	zupanija_id INT REFERENCES zupanije(zupanija_id) ON UPDATE CASCADE ON DELETE RESTRICT,
+	broj_ukupno_zarazenih INT,
+	broj_ukupno_umrlih INT,
+	broj_novozarazenih INT,
+	broj_trenutno_aktivnih INT,
+	PRIMARY KEY (izvjestaj_id, zupanija_id)
+);
+
+
+5. korak --> najprije preuzeti sve .csv datoteke koje su pripremljene(direktorij podaci_csv), spremiti ih na računalo i u narednim naredbama putanju zamijeniti 
+putanjom do mjesta gdje su datoteke pohranjene
+
+COPY zupanije(zupanija_id, naziv_zupanije, broj_stanovnika, mjesto_gid) FROM '/home/vtucelj20/Downloads/zupanije.csv' DELIMITER ',' CSV HEADER;
+
+SET DateStyle TO MDY;
+
+COPY dnevni_izvjestaji(izvjestaj_id, datum_i_vrijeme_unosa, za_datum) FROM '/home/vtucelj20/Downloads/izvjestaji.csv' DELIMITER ',' CSV HEADER;
+
+COPY podaci_detaljno(izvjestaj_id, zupanija_id, broj_ukupno_zarazenih, broj_ukupno_umrlih, broj_novozarazenih, broj_trenutno_aktivnih) FROM '/home/vtucelj20/Downloads/detaljno.csv' DELIMITER ',' CSV HEADER;
+
+
+6.korak --> preuzeti sve datoteke iz direktorija web stranica i pohraniti ih tamo gdje ih apache2 server može čitati, 
+u mojem slučaju je to /var/www/html direktorij
+
+7.korak --> u pocetna.php i drugipregled.php potrebno je postojeće autorizacijske podatke za spajanje na kreiranu bazu promijeniti sukladno novokreiranima
+u koraku 1.
+
+8.korak --> otvoriti browser i za url upisati localhost/pocetna.php
